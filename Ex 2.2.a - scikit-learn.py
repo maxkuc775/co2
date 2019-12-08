@@ -20,6 +20,10 @@ print(df.info())
 
 print(df.describe())
 
+matrix2 = df[df.columns[0]].as_matrix()
+list2 = matrix2.tolist()
+print(list2)
+
 from sklearn.cluster import KMeans
 
 #Create an instance of a K Means model with 2 clusters.
@@ -52,7 +56,7 @@ accuracy = np.mean(correct)
 print("Genauigkeit: ", accuracy)
 
 # Now implement the supervised classification:
-unis = pd.read_csv('../data/College_Data.csv')
+unis = pd.read_csv('../co2/data/College_Data.csv')
 sns.distplot(df['Cluster']) #Diagramm
 plt.show()
 

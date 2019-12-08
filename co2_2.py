@@ -1,19 +1,24 @@
-###         CO2
+###         CO2 Vorhersage
 
 # import libraries
 import pandas as pd
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 
-# Die Datei muss erst aufbereitet werden,
+# Die Datei muss zuerst aufbereitet werden,
 # Es werden erst alle Werte je Land und Jahr aufsummiert
 # Es wird nur eine Zeile je Land erzeugt und summierten Werte je Jahr nach rechts weggeschrieben
+# (Monaco entfernt, da keine Werte für 2014)
 
+##################################
+#Vorbereiten der Input Datei
 rel_path = os.path.dirname(os.path.realpath(__file__))  # Pfad zum Projekt
 csv_data_file = rel_path + '/greenhouse_gas_inventory_data_data.csv'  # Datei muss im Projektordner liegen
-csv_output_file = rel_path + '/new.csv'
+csv_output_file = rel_path + '/new.csv' #Output File
 
 print("Input: {}".format(csv_data_file))
 # Lies csv. Nur Felder: Land, Jahr, Emission
@@ -41,52 +46,78 @@ matrix2 = df[df.columns[0]].values
 countries = matrix2.tolist()
 print("Laender: ", countries)
 
-# Jedem Land eine individuelle Zahl zuweisen und in Cluster schreiben
+# Jedem Land eine individuelle Zahl zuweisen
 def converter(country):
     return countries.index(country)
 
-df['Cluster'] = df['country_or_area'].apply(converter)
+#neue Spalte CLuster mit individueller Zahl
+#df['Cluster'] = df['country_or_area'].apply(converter)
 
 # neue CSV Datei mit dem Namen new2.csv speichern
 df.to_csv('new2.csv')
 
 # Neue Datei einlesen
 # We'll set the 2nd column as the index --> Values beginnen hier (1990)
-df = pd.read_csv(rel_path + '/new2.csv', index_col=3)
+df = pd.read_csv(rel_path + '/new2.csv')
 
 #print(df.head())
 #print(df.info())
 #print(df.describe())
+#print(df.dtypes)
+#print(df.tail(11))
 
-### X and y arrays
-# What are the columns of the dataset that you want to use as inputs (x-values) for the classification? Adapt the list columns accordingly. What is the column for the ys, i.e., the predictions?
-col = list((df.columns))
-col.remove('2014')
-col.remove('country_or_area')
-columns = col
-X = df[columns]
-y = df['2014']
+#features = Werte aus Vergangenheit, die benutzt werden, um 2014 rauszufinden
+#daher 2014 raus
+#country_or_area ist string, macht probleme, aber jedes country hat eine zahl
+features = np.array(df.drop(['country_or_area','2014'],1))
+# Label = was wir vorhersagen wollen
+labels = np.array(df.filter(items=['2014']))
 
-# Train Test Split
-from sklearn.model_selection import train_test_split
+#vorbereiten der features
+#jedes feature wird skaliert
+features = preprocessing.scale(features)
 
-# Now let's split the data into a training set and a testing set. We will train out model on the training set and then use the test set to evaluate the model.
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101)
+#aufteilen in testdaten und 20% trainingsdaten
+features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size=0.2)
 
-## Create and train the classifier
-# Import the KNeighborsClassifier
-from sklearn.neighbors import KNeighborsClassifier
+#Modell wird trainiert
+linear_classifier = LinearRegression()
+linear_classifier.fit(features_train, labels_train)
 
-# Instantiate the classifier with 3 neighbors
-neigh = KNeighborsClassifier(n_neighbors=3)
+#Überprüfen, wie gut die Daten sind
+score = linear_classifier.score(features_test, labels_test)
+print('Genauigkeit: ', score)
 
-# fit the KNeighbors classifier to the dataset
-neigh.fit(X, y)
-print("Abc", neigh.predict(X_test))
-#print(neigh.predict_proba(X_test))
+######################################################
+# Hier nur für den Germany Plot
+# Relativer Pfad der Datei (im Projektordner)
+rel_path = os.path.dirname(os.path.realpath(__file__))
+#Input File = Original Datei
+csv_data_file = rel_path + '/greenhouse_gas_inventory_data_data.csv'
+#Output File - Datei wird angepasst zum Bearbeiten
+csv_output_file = rel_path + '/new3.csv'
 
-## Model Evaluation
-# The accuracy can be obtained with the score function of the classifier.
-correct2 = y_test == np.array(neigh.predict(X_test))
-accuracy2 = np.mean(correct2)
-print(accuracy2)
+#Ausgabe was Input File ist
+#print("Input: {}".format(csv_data_file))
+# Lies nur Felder: Land, Jahr, Emission aus Input File
+df2 = pd.read_csv(csv_data_file, usecols=['country_or_area', 'year', 'value'])
+
+# Gruppiere Daten nach Land und Jahr, summiere Emission
+df2 = df2.groupby(['country_or_area', 'year']).sum(level='value')
+
+#Ausgabe was Output File ist und Speichern neue Datei
+#print("Output: {}".format(csv_output_file))
+df2.to_csv(csv_output_file)
+
+df2 = pd.read_csv(rel_path + '/new3.csv')
+df2 = df2.loc[(df2['country_or_area'] == 'Germany')]
+df2.to_csv('new3.csv')
+
+df2.loc[:,'year'] = pd.to_datetime(df2.year, format= '%Y')
+df2.set_index('year', inplace = True)
+
+#print(df2.head())
+ax = plt.gca()
+df2.plot(kind='line',y='value',ax=ax)
+plt.show()
+
