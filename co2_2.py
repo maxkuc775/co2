@@ -110,13 +110,16 @@ df2 = df2.groupby(['country_or_area', 'year']).sum(level='value')
 df2.to_csv(csv_output_file)
 
 df2 = pd.read_csv(rel_path + '/new3.csv')
+#Nur Deutschland
 df2 = df2.loc[(df2['country_or_area'] == 'Germany')]
 df2.to_csv('new3.csv')
 
+#Formatieren des Datums
 df2.loc[:,'year'] = pd.to_datetime(df2.year, format= '%Y')
 df2.set_index('year', inplace = True)
 
 #print(df2.head())
+#Diagramm machen
 ax = plt.gca()
 df2.plot(kind='line',y='value',ax=ax)
 plt.show()
