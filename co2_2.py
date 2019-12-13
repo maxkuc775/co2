@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+import seaborn as sns
 
 # Die Datei muss zuerst aufbereitet werden,
 # Es werden erst alle Werte je Land und Jahr aufsummiert
 # Es wird nur eine Zeile je Land erzeugt und summierten Werte je Jahr nach rechts weggeschrieben
 # (Monaco entfernt, da keine Werte für 2014)
 
-##################################
+########################################################
+
 #Vorbereiten der Input Datei
 rel_path = os.path.dirname(os.path.realpath(__file__))  # Pfad zum Projekt
 csv_data_file = rel_path + '/greenhouse_gas_inventory_data_data.csv'  # Datei muss im Projektordner liegen
@@ -36,6 +38,7 @@ pivot = df.pivot_table(index='country_or_area',
 print("Output: {}".format(csv_output_file))
 # Schreib csv
 pivot.to_csv(csv_output_file)
+
 
 #########################################################################
 # Einlesen der neuen Datei, die so aufbereitet ist, wie wir sie brauchen
