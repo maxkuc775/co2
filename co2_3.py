@@ -18,9 +18,10 @@ csv_output_file = rel_path + '/neu.csv' #Output File
 print("Input: {}".format(csv_data_file))
 
 # Lies csv. Nur Felder: Land, Jahr, Emission
+# Spalte Kategorie wird weggelassen, da nicht berücksichtigt und aufsummiert
 df = pd.read_csv(csv_data_file, usecols=['country_or_area', 'year', 'value'])
 
-# Gruppiere Daten (vor 2015) nach Land und Jahr, summiere Emission
+# Gruppiere Daten (vor 2015) nach Land und Jahr, summiere Emission der verschiedenen Kategorien
 df = df[df.year < 2015].groupby(['country_or_area', 'year']).sum(level='value')
 
 # Erstelle Pivot-Tabelle mit Land als Index, Jahre als Spalten
@@ -35,6 +36,7 @@ print("Output: {}".format(csv_output_file))
 # Schreib csv (erstelle neue CSV Datei)
 pivot.to_csv(csv_output_file)
 
+################################## ab hier wird mit neu.csv gearbeitet
 # Einlesen der neuen Datei, die so aufbereitet ist, wie wir sie brauchen
 df = pd.read_csv(rel_path + '/neu.csv')
 
@@ -45,8 +47,8 @@ print (df.describe()) #Anzahl Zeilen, Durchschnitt, Abweichung, ...
 print (df.columns) #Namen der Spalten
 
 # Länder in List "countries" schreiben
-matrix2 = df[df.columns[0]].values
-countries = matrix2.tolist()
+matrix2 = df[df.columns[0]].values #Länder werden als String in Array matrix2 geschrieben
+countries = matrix2.tolist() # matrix2 wird zur Liste countries gemacht
 print("Laender: ", countries)
 
 # Jedem Land eine individuelle Zahl zuweisen und vorne vorweg schreiben
@@ -68,6 +70,7 @@ print (df.head())
 ### Training a Linear Regression Model
 ## Definiere X und Y Arrays
 # Droppen von Country, da String und 2014, da target variable
+# String geht nicht
 X = df.drop(['country_or_area','2014'],1)
 y = df['2014'] #target variable
 
@@ -91,5 +94,5 @@ plt.show()
 
 ### Regression Evaluation Metrics
 from sklearn import metrics
-### Mean Absolute Error
+### Mean Absolute Error, Mittlere absolute Abweichung
 print('MAE: ', metrics.mean_absolute_error(y_test, predictions))
