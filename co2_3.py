@@ -13,7 +13,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-
 # Pfad zum Projekt = Relativer Pfad
 rel_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -71,6 +70,7 @@ df.to_csv('neu2.csv')
 # neue CSV Datei mit dem Namen new2.csv einlesen
 df = pd.read_csv(rel_path + '/neu2.csv')
 
+print("Beginn des linearen Regression")
 ### Training a Linear Regression Model
 ## Definiere X und Y Arrays
 # Droppen von Country, 2013, 2014 und der ersten Spalte (Unnamed 0)
@@ -80,7 +80,7 @@ y = df['2013'] #target variable
 
 ### Train Test Split
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=101)
 
 ### Creating and Training the Model
 from sklearn.linear_model import LinearRegression
@@ -98,11 +98,11 @@ predictions = lr.predict(X_test)
 from sklearn import metrics
 ### Mean Absolute Error, Mittlere absolute Abweichung
 print('MAE LR: ', metrics.mean_absolute_error(y_test, predictions))
-print("##############################################")
+mae_lr = metrics.mean_absolute_error(y_test, predictions)
 
-"""
+#Plotten eines Landes
 xs = np.array(range(1990,2015))
-for country in countries[1:3]:
+for country in countries[1:2]:
     row = df.loc[df["country_or_area"] == country]
     ys = np.array(row._values[0][2:], dtype=float)
     ys_lr = ys.copy()
@@ -113,13 +113,15 @@ for country in countries[1:3]:
     #prediction 2014 eintragen und regressionsgerade
     #danach neuronales netz und vergleichen
     #1990 - 2012 oder Länder aufteilen in Testdaten
-"""
-######################################################################################################
+
+############################################################
+print(" ")
+print("Beginn des Neuronalen Netzes")
 
 dataset = pd.read_csv(rel_path + '/neu2.csv')
 dataset = dataset.drop('country_or_area',1)
 dataset = dataset.drop('Unnamed: 0',1)
-dataset.to_csv('neu3.csv')
+#dataset.to_csv('neu3.csv')
 #dataset = pd.read_csv(rel_path + '/neu3.csv')
 
 #normieren der Daten
@@ -151,7 +153,7 @@ print(model.summary())
 
 example_batch = X_train[:10]
 example_result = model.predict(example_batch)
-print(example_result)
+#print(example_result)
 
 ##### TRAIN THE MODEL ###################
 # Display training progress by printing a single dot for each completed epoch
@@ -161,20 +163,17 @@ class PrintDot(keras.callbacks.Callback):
     print('.', end='')
 
 # EPOCHS
-EPOCHS = 1000
+EPOCHS = 300
 
 history = model.fit(
   X_train, y_train,
   epochs=EPOCHS, validation_split = 0.2, verbose=0,
   callbacks=[PrintDot()])
 
-
 hist = pd.DataFrame(history.history)
 hist['epoch'] = history.epoch
 print(hist.head())
 hist.to_csv('neu4.csv')
-
-
 
 def plot_history(history):
   hist = pd.DataFrame(history.history)
@@ -189,34 +188,25 @@ def plot_history(history):
            label = 'Val Error')
   #plt.ylim([0,5])
   plt.legend()
-
-  plt.figure()
-  plt.xlabel('Epoch')
-  plt.ylabel('Mean Square Error')
-  plt.plot(hist['epoch'], hist['mse'],
-           label='Train Error')
-  plt.plot(hist['epoch'], hist['val_mse'],
-           label = 'Val Error')
-  #plt.ylim([0,20])
-  plt.legend()
   plt.show()
 
 plot_history(history)
 
-
 model = build_model()
 
 # The patience parameter is the amount of epochs to check for improvement
-early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
 history = model.fit(X_train, y_train, epochs=EPOCHS,
                     validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
 
 plot_history(history)
+plt.show()
 
 loss, mae, mse = model.evaluate(X_test, y_test, verbose=2)
 
 print("Testing set Mean Abs Error: {:5.2f} ".format(mae))
+mae_nn=mae
 
 test_predictions = model.predict(X_test).flatten()
 
@@ -235,3 +225,14 @@ plt.hist(error, bins = 25)
 plt.xlabel("Prediction Error [CO2]")
 plt.ylabel("Count")
 plt.show()
+
+print('MAE LR: ',mae_lr)
+print('MAE NN: ',mae_nn)
+
+data = [mae_lr, mae_nn]
+s = pd.Series(data, index=range(len(data)))
+s.plot(kind="bar", rot=0)
+plt.xlabel('MAE')
+plt.plot()
+plt.show()
+#jetzt noch für 10 Durchläufe durchschnittlichen MAE und Standardabweichung berechnen und darstellen - dann fertig
