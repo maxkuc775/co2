@@ -126,10 +126,10 @@ dataset = dataset.drop('Unnamed: 0',1)
 
 #normieren der Daten
 """
-#def norm(x):
-#  return (x - train_stats['mean']) / train_stats['std']
-#normed_train_data = norm(train_dataset)
-#normed_test_data = norm(test_dataset)
+def norm(x):
+  return (x - train_stats['mean']) / train_stats['std']
+normed_train_data = norm(train_dataset)
+normed_test_data = norm(test_dataset)
 """
 
 def build_model():
@@ -229,8 +229,9 @@ plt.show()
 print('MAE LR: ',mae_lr)
 print('MAE NN: ',mae_nn)
 
+datenbeschriftung =['MAE LR','MAE NN']
 data = [mae_lr, mae_nn]
-s = pd.Series(data, index=range(len(data)))
+s = pd.Series(data, index=datenbeschriftung)
 s.plot(kind="bar", rot=0)
 plt.xlabel('MAE')
 plt.plot()
