@@ -237,3 +237,4 @@ plt.xlabel('MAE')
 plt.plot()
 plt.show()
 #jetzt noch für 10 Durchläufe durchschnittlichen MAE und Standardabweichung berechnen und darstellen - dann fertig
+#
