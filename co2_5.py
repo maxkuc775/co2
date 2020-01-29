@@ -175,6 +175,7 @@ hist['epoch'] = history.epoch
 print(hist.head())
 hist.to_csv('neu4.csv')
 
+#Diagramm
 def plot_history(history):
   hist = pd.DataFrame(history.history)
   hist['epoch'] = history.epoch
