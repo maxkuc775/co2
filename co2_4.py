@@ -50,10 +50,11 @@ pivot.to_csv(csv_output_file)
 df = pd.read_csv(rel_path + '/neu.csv')
 
 # Ein paar Infos der Datei anzeigen
-#print (df.head()) #gibt erste 5 Zeilen wieder
-#print (df.info()) #Anzahl Spalten, RangeIndex, Datentypen, ...
-#print (df.describe()) #Anzahl Zeilen, Durchschnitt, Abweichung, ...
-#print (df.columns) #Namen der Spalten
+print ("Infos der Datei: ")
+print (df.head()) #gibt erste 5 Zeilen wieder
+print (df.info()) #Anzahl Spalten, RangeIndex, Datentypen, ...
+print (df.describe()) #Anzahl Zeilen, Durchschnitt, Abweichung, ...
+print (df.columns) #Namen der Spalten
 
 # Länder in List "countries" schreiben
 matrix2 = df[df.columns[0]].values #Länder werden als String in Array matrix2 geschrieben
@@ -100,37 +101,21 @@ from sklearn import metrics
 print('MAE LR: ', metrics.mean_absolute_error(y_test, predictions))
 mae_lr = metrics.mean_absolute_error(y_test, predictions)
 
-#Plotten eines Landes
+#Plotten eines Landes (Deutschland)
 xs = np.array(range(1990,2015))
 for country in countries[1:2]:
-    row = df.loc[df["country_or_area"] == country]
+    row = df.loc[df["country_or_area"] == 'Germany']
     ys = np.array(row._values[0][2:], dtype=float)
     ys_lr = ys.copy()
     #ys_lr[-1] = predictions
+    plt.title('Germany')
     sns.lineplot(xs, ys)
     sns.lineplot(xs, ys_lr)
     plt.show()
-    #prediction 2014 eintragen und regressionsgerade
-    #danach neuronales netz und vergleichen
-    #1990 - 2012 oder Länder aufteilen in Testdaten
 
 ############################################################
 print(" ")
 print("Beginn des Neuronalen Netzes")
-
-dataset = pd.read_csv(rel_path + '/neu2.csv')
-dataset = dataset.drop('country_or_area',1)
-dataset = dataset.drop('Unnamed: 0',1)
-#dataset.to_csv('neu3.csv')
-#dataset = pd.read_csv(rel_path + '/neu3.csv')
-
-#normieren der Daten
-"""
-def norm(x):
-  return (x - train_stats['mean']) / train_stats['std']
-normed_train_data = norm(train_dataset)
-normed_test_data = norm(test_dataset)
-"""
 
 def build_model():
   input_len = len(X_train.columns)
@@ -149,11 +134,11 @@ def build_model():
   return model
 
 model = build_model()
+print("Model Summary: ")
 print(model.summary())
 
 example_batch = X_train[:10]
 example_result = model.predict(example_batch)
-#print(example_result)
 
 ##### TRAIN THE MODEL ###################
 # Display training progress by printing a single dot for each completed epoch
@@ -162,14 +147,16 @@ class PrintDot(keras.callbacks.Callback):
     if epoch % 100 == 0: print('')
     print('.', end='')
 
-# EPOCHS
+# EPOCHS 123
 EPOCHS = 300
 
+#Train the model für 300 epochs and record the training and validation accuracy in the history object
 history = model.fit(
   X_train, y_train,
   epochs=EPOCHS, validation_split = 0.2, verbose=0,
   callbacks=[PrintDot()])
 
+#Visualize the model's training progress using the stats stored in history
 hist = pd.DataFrame(history.history)
 hist['epoch'] = history.epoch
 print(hist.head())
@@ -195,11 +182,11 @@ plot_history(history)
 model = build_model()
 
 # The patience parameter is the amount of epochs to check for improvement
-early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=20)
 
 history = model.fit(X_train, y_train, epochs=EPOCHS,
                     validation_split = 0.2, verbose=0, callbacks=[early_stop, PrintDot()])
-
+#Plot
 plot_history(history)
 plt.show()
 
@@ -236,4 +223,3 @@ s.plot(kind="bar", rot=0)
 plt.xlabel('MAE')
 plt.plot()
 plt.show()
-#test
