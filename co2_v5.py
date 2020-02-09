@@ -12,6 +12,7 @@ import pathlib
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from scipy.stats import linregress
 
 """ ------- Vorbereitung der Daten ------ """
 # Pfad zum Projekt = Relativer Pfad
@@ -75,6 +76,7 @@ df.to_csv('neu2.csv')
 # neue CSV Datei mit dem Namen new2.csv einlesen
 df = pd.read_csv(rel_path + '/neu2.csv')
 
+
 """ ------- Lineare Regression ------ """
 print("Beginn des linearen Regression")
 ### Training a Linear Regression Model
@@ -86,7 +88,7 @@ y = df['2013'] #target variable
 
 ### Train Test Split
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=101)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=105)
 
 ### Creating and Training the Model
 from sklearn.linear_model import LinearRegression
@@ -106,16 +108,18 @@ from sklearn import metrics
 print('MAE LR: ', metrics.mean_absolute_error(y_test, predictions))
 mae_lr = metrics.mean_absolute_error(y_test, predictions)
 
-""" ------- #Plotten eines Landes (Deutschland) ------ """
+""" ------- #Plotten eines Landes (Deutschland (14)) ------ """
 xs = np.array(range(1990,2015))
+y_test1 = y_test.copy()
+ys_copy= y_test1[14]
+
 for country in countries[1:2]:
     row = df.loc[df["country_or_area"] == 'Germany']
     ys = np.array(row._values[0][2:], dtype=float)
-    ys_lr = ys.copy()
-    #ys_lr[-1] = predictions
     plt.title('Germany')
-    sns.lineplot(xs, ys)
-    sns.lineplot(xs, ys_lr)
+    b, a, r, p, std = linregress(xs, ys)
+    plt.scatter(xs, ys, color='blue')
+    #plt.plot([a,a+2015*b], c='red')
     plt.show()
 
 """ ------- Neuronales Netz ------ """
@@ -184,7 +188,7 @@ def plot_history(history):
 plot_history(history)
 model = build_model()
 
-""" ------- Early Stop Funktion (Patience = 20!!!) und Plot ------ """
+""" ------- Early Stop Funktion (Patience = 30!!!) und Plot ------ """
 # The patience parameter is the amount of epochs to check for improvement
 early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=30)
 history = model.fit(X_train, y_train, epochs=EPOCHS,
@@ -194,7 +198,7 @@ plt.show()
 
 """ ------- Berechnung MAE NN ------ """
 loss, mae, mse = model.evaluate(X_test, y_test, verbose=2)
-print("Testing set Mean Abs Error: {:5.2f} ".format(mae))
+print("Testing set Mean Abs Error NN: {:5.2f} ".format(mae))
 mae_nn=mae
 test_predictions = model.predict(X_test).flatten()
 
@@ -216,6 +220,9 @@ plt.xlabel("Prediction Error [CO2]")
 plt.ylabel("Count")
 plt.show()
 
+print(' ')
+print('Andere Methoden')
+
 """ ------- Decision Tree Regressor ------ """
 from sklearn.tree import DecisionTreeRegressor
 tree = DecisionTreeRegressor(max_depth=5)
@@ -236,6 +243,8 @@ mae_pr = metrics.mean_absolute_error(y_test, pr_predictions)
 print ('MAE PR: ', mae_pr)
 
 """ ------- Linear Regressor (2) [für mehrere Durchläufe] ------ """
+print(' ')
+print('Beginn der 10 Durchläufe')
 #Deklarieren des Numpy Arrays
 list_mae_lr2 = np.array(range(0,10))
 list_mae_nn2 = np.array(range(0,10))
