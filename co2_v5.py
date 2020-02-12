@@ -76,7 +76,6 @@ df.to_csv('neu2.csv')
 # neue CSV Datei mit dem Namen new2.csv einlesen
 df = pd.read_csv(rel_path + '/neu2.csv')
 
-
 """ ------- Lineare Regression ------ """
 print("Beginn des linearen Regression")
 ### Training a Linear Regression Model
@@ -110,16 +109,14 @@ mae_lr = metrics.mean_absolute_error(y_test, predictions)
 
 """ ------- #Plotten eines Landes (Deutschland (14)) ------ """
 xs = np.array(range(1990,2015))
-y_test1 = y_test.copy()
-ys_copy= y_test1[14]
 
 for country in countries[1:2]:
     row = df.loc[df["country_or_area"] == 'Germany']
     ys = np.array(row._values[0][2:], dtype=float)
     plt.title('Germany')
-    b, a, r, p, std = linregress(xs, ys)
+    a, b, r, p, std = linregress(xs, ys)
     plt.scatter(xs, ys, color='blue')
-    #plt.plot([a,a+2015*b], c='red')
+    plt.plot(xs, a*xs + b, color='red')
     plt.show()
 
 """ ------- Neuronales Netz ------ """
