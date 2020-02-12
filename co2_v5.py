@@ -131,7 +131,6 @@ def build_model():
     layers.Dense(64, activation='relu'),
     layers.Dense(1)
   ])
-
   optimizer = tf.keras.optimizers.RMSprop(0.0001)
   optimizer = tf.keras.optimizers.Adam()
 
@@ -242,6 +241,7 @@ print ('MAE PR: ', mae_pr)
 """ ------- Linear Regressor (2) [für mehrere Durchläufe] ------ """
 print(' ')
 print('Beginn der 10 Durchläufe')
+
 #Deklarieren des Numpy Arrays
 list_mae_lr2 = np.array(range(0,10))
 list_mae_nn2 = np.array(range(0,10))
