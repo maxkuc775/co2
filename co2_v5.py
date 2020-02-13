@@ -82,8 +82,8 @@ print("Beginn des linearen Regression")
 ## Definiere X und Y Arrays
 # Droppen von Country, 2013, 2014 und der ersten Spalte (Unnamed 0)
 # String geht nicht, 2013 target variable, 2014 soll vorhergesagt werden, erste Spalte (Länderzahlen 0) irrelevant
-X = df.drop(['country_or_area','2013','2014','Unnamed: 0'],1)
-y = df['2013'] #target variable
+X = df.drop(['country_or_area','2014','Unnamed: 0'],1)
+y = df['2014'] #target variable
 
 ### Train Test Split
 from sklearn.model_selection import train_test_split
